@@ -1,0 +1,101 @@
+{
+    "mode": "All",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "microsoft.resources/subscriptions/resourcegroups"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "[concat('tags[', parameters('tagNames')[0], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[1], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[2], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[3], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[4], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[5], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[6], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[7], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[8], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[9], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[10], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[11], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[12], ']')]",
+                "exists": "false"
+              },
+              {
+                "field": "[concat('tags[', parameters('tagNames')[13], ']')]",
+                "exists": "false"
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    },
+    "parameters": {
+      "tagNames": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Tag Names",
+          "description": "List of required tag names to enforce"
+        },
+        "defaultValue": [
+          "BusinessUnit",
+          "CostCenter",
+          "ApplicationName",
+          "Environment",
+          "BusinessCriticality",
+          "ActiveHours",
+          "Monitoring",
+          "BackupPolicy",
+          "PatchWindow",
+          "ApplicationOwner",
+          "StartDateEndDate",
+          "SupportTeam",
+          "DataClassification",
+          "Compliance"
+        ]
+      }
+    }
+  }
