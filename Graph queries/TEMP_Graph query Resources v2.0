@@ -1,0 +1,99 @@
+ResourceContainers
+| where type == 'microsoft.resources/subscriptions'
+| project subscriptionId, subscriptionName = name
+| order by subscriptionName asc
+
+
+Resources
+| project subscriptionId, location, resourceGroup, type, name
+| order by subscriptionId, resourceGroup, type, name asc
+
+
+Resources
+| where type == "microsoft.compute/virtualmachines"
+| where properties.storageProfile.osDisk.osType == "Linux"
+| where tolower(properties.storageProfile.imageReference.publisher) == "redhat" 
+| project name, location, resourceGroup, properties.hardwareProfile.vmSize, properties.storageProfile.imageReference.sku, properties.provisioningState
+
+
+=TRIM(MID(A1, FIND("Application:",A1) + LEN("Application:"), FIND(",",A1 & ",", FIND("Application:",A1)) - FIND("Application:",A1) - LEN("Application:")))
+
+
+Resources
+| extend powerState = properties.extended.instanceView.powerState.code
+| where powerState != "PowerState/running"
+| project name, location, type, powerState
+| where type =~ 'Microsoft.Compute/virtualMachines'
+| order by name desc
+
+
+Resources
+| where type == "microsoft.compute/virtualmachines"
+| project vmId = id, vmName = name, location, resourceGroup, vmSize = properties.hardwareProfile.vmSize, osType = properties.storageProfile.osDisk.osType, provisioningState = properties.provisioningState, computerName = properties.osProfile.computerName, nicId = tostring(properties.networkProfile.networkInterfaces[0].id)
+| join kind=leftouter (
+    Resources
+    | where type == "microsoft.network/networkinterfaces"
+    | project nicId = id, privateIpAddress = properties.ipConfigurations[0].properties.privateIPAddress, publicIpId = tostring(properties.ipConfigurations[0].properties.publicIPAddress.id)
+) on nicId
+| join kind=leftouter (
+    Resources
+    | where type == "microsoft.network/publicipaddresses"
+    | project publicIpId = id, publicIpAddress = properties.ipAddress
+) on publicIpId
+| project vmId, vmName, location, resourceGroup, vmSize, osType, provisioningState, computerName, privateIpAddress, publicIpAddress
+
+
+Resources
+| where type == "microsoft.compute/virtualmachines"
+| project vmId = id, 
+          vmName = name, 
+          location, 
+          resourceGroup, 
+          osType = properties.storageProfile.osDisk.osType, 
+          vmSize = properties.hardwareProfile.vmSize, 
+          networkInterfaceId = tostring(properties.networkProfile.networkInterfaces[0].id), 
+          offer = properties.storageProfile.imageReference.offer, 
+          fqdn = properties.networkProfile.networkInterfaces[0].properties.dnsSettings.fqdn, 
+          imageId = properties.storageProfile.imageReference.id, 
+          provisioningState = properties.provisioningState, 
+          timeCreated = properties.timeCreated, 
+          tags
+| join kind=leftouter (
+    Resources
+    | where type == "microsoft.network/networkinterfaces"
+    | project nicId = id, 
+              privateIpAddress = properties.ipConfigurations[0].properties.privateIPAddress, 
+              publicIpId = tostring(properties.ipConfigurations[0].properties.publicIPAddress.id)
+) on $left.networkInterfaceId == $right.nicId
+| join kind=leftouter (
+    Resources
+    | where type == "microsoft.network/publicipaddresses"
+    | project publicIpId = id, 
+              publicIpAddress = properties.ipAddress
+) on $left.publicIpId == $right.publicIpId
+| project vmName, 
+          location, 
+          resourceGroup, 
+          osType, 
+          vmSize, 
+          privateIpAddress, 
+          publicIpAddress, 
+          offer, 
+          fqdn, 
+          imageId, 
+          provisioningState, 
+          timeCreated, 
+          tags
+
+
+resources
+| mv-expand tags
+| where tags contains 'MSPS was migrated to MSPO'
+| summarize tags = make_bag(tags) by name, type, location, resourceGroup, subscriptionId
+
+
+Resources
+| where type == "microsoft.web/sites" or type == "microsoft.web/serverfarms"
+| extend properties = parse_json(properties)
+| where properties.siteConfig.minTlsVersion != "1.2" 
+| project name, type, location, properties.siteConfig.minTlsVersion
