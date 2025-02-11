@@ -1,0 +1,4 @@
+policyresources
+| where properties['complianceState'] == 'NonCompliant'
+| where properties['policyAssignmentId'] == "/providers/microsoft.management/managementgroups/5091ee51-2b4b-4d7d-9964-666621ef0688/providers/microsoft.authorization/policyassignments/9644cf3de2d0411683e2c966"
+| project id, name, resourceGroup, subscriptionId, properties.complianceState
